@@ -1,0 +1,78 @@
+bash "instalar1" do
+  user "root"
+  code <<-EOH
+  yum groupinstall -y "Development Tools"
+  EOH
+end
+
+yum_package "openssl-devel" do
+  action :install
+end
+
+bash "descargar ruby" do
+  user "root"
+  code <<-EOH
+  wget http://cache.ruby-lang.org/pub/ruby/2.1/ruby-2.1.2.tar.gz
+  tar xvfvz ruby-2.1.2.tar.gz
+  EOH
+end
+
+bash "install ruby" do
+  user "root"
+  code <<-EOH
+  cd ruby-2.1.2
+  ./configure
+  EOH
+end
+
+bash "terminar instalacion" do
+  user "root"
+  code <<-EOH
+  make
+  make install
+  EOH
+end
+
+yum_package "postgresql-devel" do
+  action :install
+end
+
+bash "instalar gemas" do
+  user "root"
+  code <<-EOH
+  gem update --system
+  gem install bundler --no-ri --no-rdoc
+  gem install foreman --no-ri --no-rdoc
+  gem install pg
+  EOH
+end
+
+bash "open port" do
+  user "root"
+  code <<-EOH
+  iptables -I INPUT 5 -p tcp -m state --state NEW -m tcp --dport 5000 -j ACCEPT
+  service iptables save
+  EOH
+end
+
+
+cookbook_file "/var/www/html/index.html" do
+  source 'index.html'
+  mode 0644
+  owner "root"
+  group "wheel"
+end
+
+cookbook_file "/var/www/html/select.php" do
+  source 'select.php'
+  mode 0644
+  owner "root"
+  group "wheel"
+end
+
+cookbook_file "/var/www/html/info.php" do
+  source 'info.php'
+  mode 0644
+  owner "root"
+  group "wheel"
+end
